@@ -1,4 +1,5 @@
-﻿using TradeGrid.Core.DTOs;
+﻿using System.Linq;
+using TradeGrid.Core.DTOs;
 using TradeGrid.Core.Interfaces;
 using TradeGrid.Core.Models;
 
@@ -77,9 +78,54 @@ namespace TradeGrid.Services
                 filteredProducts = filteredProducts?.Where(x => x.Sizes.Intersect(filter.Sizes).Any());
             }
 
+            if (filter.WordsFromHighlight?.Any() ?? false)
+            {
+                if (filter.MostCommonWords?.Intersect(filter.WordsFromHighlight).Any() ?? false)
+                {
+                    filteredProducts = filteredProducts?.Where(x 
+                        => x.Description
+                            .ToLower()
+                            .Split(new[] { ' ', '.', ',', '!', '?', ';', ':' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Intersect(filter.WordsFromHighlight)
+                            .Any());
+                }
+            }
+
             var count = filteredProducts?.Count();
 
             return filteredProducts;
+        }
+
+        public async Task<IEnumerable<string>> GetCommonWords(int skip, int take)
+        {
+            var wordCounts = new Dictionary<string, int>();
+            var allProducts = await GetAllProductsAsync();
+
+            foreach (var product in allProducts ?? Enumerable.Empty<Product>())
+            {
+                var words = product.Description
+                    .ToLower()
+                    .Split(new[] { ' ', '.', ',', '!', '?', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var word in words)
+                {
+                    if (wordCounts.ContainsKey(word))
+                    {
+                        wordCounts[word]++;
+                    }
+                    else
+                    {
+                        wordCounts[word] = 1;
+                    }
+                }
+            }
+
+            var ordered = wordCounts.OrderByDescending(x => x.Value);
+
+            return ordered
+                .Skip(skip)
+                .Take(take)
+                .Select(x => x.Key);
         }
     }
 }

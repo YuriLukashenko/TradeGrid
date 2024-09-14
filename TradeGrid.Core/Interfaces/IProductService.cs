@@ -7,5 +7,7 @@ namespace TradeGrid.Core.Interfaces
     {
         Task<IEnumerable<Product>?> GetAllProductsAsync();
         Task<IEnumerable<Product>?> GetFilteredProductsAsync(FilterDto filter);
+
+        Task<IEnumerable<string>> GetCommonWords(int skip, int take);
     }
 }

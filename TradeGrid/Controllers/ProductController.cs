@@ -27,7 +27,8 @@ namespace TestTask.Controllers
             }
             else
             {
-                var filterDto = new FilterDto(minPrice, maxPrice, size, highlight);
+                var words = await _productService.GetCommonWords(5, 10);
+                var filterDto = new FilterDto(minPrice, maxPrice, size, highlight, words);
 
                 products = await _productService.GetFilteredProductsAsync(filterDto);
             }
