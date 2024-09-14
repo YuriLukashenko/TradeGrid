@@ -33,8 +33,9 @@ namespace TestTask.Controllers
                 products = await _productService.GetFilteredProductsAsync(filterDto);
             }
 
+            var mappedProducts = _productService.Map(products, highlight);
 
-            return Ok(products);
+            return Ok(mappedProducts);
         }
     }
 }

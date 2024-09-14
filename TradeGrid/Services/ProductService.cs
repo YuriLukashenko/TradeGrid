@@ -96,6 +96,32 @@ namespace TradeGrid.Services
             return filteredProducts;
         }
 
+        public IEnumerable<ProductResponseDto>? Map(IEnumerable<Product>? products, string? highlight)
+        {
+            var wordsFromHighlight = highlight?.Split(",") ?? Enumerable.Empty<string>();
+
+            var mappedProducts = products?.Select(ProductResponseDto.MapFrom).ToList();
+
+            foreach (var mappedProduct in mappedProducts ?? Enumerable.Empty<ProductResponseDto>())
+            {
+                var words = mappedProduct.Description
+                    .ToLower()
+                    .Split(new[] { ' ', '.', ',', '!', '?', ';', ':' }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
+
+                foreach (var highlightWord in wordsFromHighlight)
+                {
+                    var index = words.FindIndex(x => x == highlightWord);
+                    if (index != -1)
+                    {
+                        mappedProduct.Description = mappedProduct.Description.Replace(highlightWord, $"<em>{highlightWord}</em>");
+                    }
+                }
+            }
+
+            return mappedProducts;
+        }
+
         public async Task<IEnumerable<string>> GetCommonWords(int skip, int take)
         {
             var wordCounts = new Dictionary<string, int>();
