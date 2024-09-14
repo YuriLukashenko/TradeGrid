@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TestTask.Core.Models;
+﻿using TradeGrid.Core.Models;
 
-namespace TestTask.Core.DTOs
+namespace TradeGrid.Core.DTOs
 {
     public class ProductDto
     {

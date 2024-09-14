@@ -1,5 +1,5 @@
-using TestTask.Core.Interfaces;
-using TestTask.Services;
+using TradeGrid.Core.Interfaces;
+using TradeGrid.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Http.Metadata;
-using System.Text.Json;
-using TestTask.Core.DTOs;
-using TestTask.Core.Interfaces;
-using TestTask.Core.Models;
+﻿using TradeGrid.Core.DTOs;
+using TradeGrid.Core.Interfaces;
+using TradeGrid.Core.Models;
 
-namespace TestTask.Services
+namespace TradeGrid.Services
 {
     public class ProductService : IProductService
     {
@@ -19,7 +17,11 @@ namespace TestTask.Services
         public async Task<IEnumerable<Product>?> GetAllProductsAsync()
         {
             var products = Enumerable.Empty<Product>();
-            
+
+            //Enumerable.Empty<Product>() or new List<Product>() ?
+            //the first one: The collection is immutable, better for performance
+            //the second one: if collection is mutable and you plan to use .Add(), .Remove() etc.
+
             try
             {
                 var productDto = await _httpClient.GetFromJsonAsync<ProductDto>(_sourceUrl);
@@ -47,6 +49,37 @@ namespace TestTask.Services
             }
 
             return products;
+        }
+
+        public async Task<IEnumerable<Product>?> GetFilteredProductsAsync(FilterDto filter)
+        {
+            var filteredProducts = (await GetAllProductsAsync())?.AsQueryable(); //better to use queryable, because it creates query and only then apply it into source
+
+            if (filter.MinPrice.HasValue)
+            {
+                filteredProducts = filteredProducts?.Where(p => p.Price >= filter.MinPrice.Value);
+            }
+
+            if (filter.MaxPrice.HasValue)
+            {
+                filteredProducts = filteredProducts?.Where(p => p.Price <= filter.MaxPrice.Value);
+            }
+
+            //one way is to use foreach for filter.Sizes
+            //foreach (var size in filter.Sizes ?? Enumerable.Empty<string>())
+            //{
+            //    filteredProducts = filteredProducts?.Where(x => x.Sizes.Any(s => s == size));
+            //}
+            //the second - use Intersect, more readable
+
+            if (filter.Sizes?.Any() ?? false)
+            {
+                filteredProducts = filteredProducts?.Where(x => x.Sizes.Intersect(filter.Sizes).Any());
+            }
+
+            var count = filteredProducts?.Count();
+
+            return filteredProducts;
         }
     }
 }

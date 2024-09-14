@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TestTask.Core.Interfaces;
+using TradeGrid.Core.DTOs;
+using TradeGrid.Core.Interfaces;
+using TradeGrid.Core.Models;
 
 namespace TestTask.Controllers
 {
@@ -13,10 +15,23 @@ namespace TestTask.Controllers
             _productService = productService;
         }
 
-        [HttpGet("all")]
-        public async Task<IActionResult> GetProducts()
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetProducts([FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice, [FromQuery] string? size, [FromQuery] string? highlight)
         {
-            var products = await _productService.GetAllProductsAsync();
+            var products = Enumerable.Empty<Product>();
+
+            if (HttpContext.Request.Query.Count == 0)
+            {
+                //another approach is to check every parameter equals null, but check count of query params can handle any number of parameters
+                products = await _productService.GetAllProductsAsync();
+            }
+            else
+            {
+                var filterDto = new FilterDto(minPrice, maxPrice, size, highlight);
+
+                products = await _productService.GetFilteredProductsAsync(filterDto);
+            }
+
 
             return Ok(products);
         }
