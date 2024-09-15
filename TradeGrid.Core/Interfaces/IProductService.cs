@@ -6,7 +6,7 @@ namespace TradeGrid.Core.Interfaces
     public interface IProductService
     {
         Task<IEnumerable<Product>?> GetAllProductsAsync();
-        Task<IEnumerable<Product>?> GetFilteredProductsAsync(FilterDto filter);
+        IEnumerable<Product>? GetFilteredProducts(IEnumerable<Product>? products, FilterDto filter);
 
         IEnumerable<ProductResponseDto>? Map(IEnumerable<Product>? products, string? highlight);
 

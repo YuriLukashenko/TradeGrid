@@ -54,9 +54,9 @@ namespace TradeGrid.Services
             return products;
         }
 
-        public async Task<IEnumerable<Product>?> GetFilteredProductsAsync(FilterDto filter)
+        public IEnumerable<Product>? GetFilteredProducts(IEnumerable<Product>? products, FilterDto filter)
         {
-            var filteredProducts = (await GetAllProductsAsync())?.AsQueryable(); 
+            var filteredProducts = products?.AsQueryable() ?? Enumerable.Empty<Product>(); 
             //better to use queryable, because it creates query and only then apply it into source
 
             if (filter.MinPrice.HasValue)

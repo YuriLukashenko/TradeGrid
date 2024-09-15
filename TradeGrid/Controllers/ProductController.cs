@@ -34,7 +34,7 @@ namespace TradeGrid.Controllers
                     var words = await _productService.GetCommonWords(5, 10);
                     var filterDto = new FilterDto(minPrice, maxPrice, size, highlight, words);
 
-                    products = await _productService.GetFilteredProductsAsync(filterDto);
+                    products = _productService.GetFilteredProducts(await _productService.GetAllProductsAsync(), filterDto);
                 }
 
                 var mappedProducts = _productService.Map(products, highlight);
