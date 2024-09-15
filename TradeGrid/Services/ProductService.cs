@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using Newtonsoft.Json;
 using TradeGrid.Core.DTOs;
 using TradeGrid.Core.Interfaces;
 using TradeGrid.Core.Models;
@@ -8,17 +8,18 @@ namespace TradeGrid.Services
     public class ProductService : IProductService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<ProductService> _logger;
         private const string _sourceUrl = "https://pastebin.com/raw/JucRNpWs";
 
-        public ProductService(HttpClient httpClient)
+        public ProductService(HttpClient httpClient, ILogger<ProductService> logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<Product>?> GetAllProductsAsync()
         {
             var products = Enumerable.Empty<Product>();
-
             //Enumerable.Empty<Product>() or new List<Product>() ?
             //the first one: The collection is immutable, better for performance
             //the second one: if collection is mutable and you plan to use .Add(), .Remove() etc.
@@ -26,9 +27,7 @@ namespace TradeGrid.Services
             try
             {
                 var productDto = await _httpClient.GetFromJsonAsync<ProductDto>(_sourceUrl);
-
                 products = productDto?.Products ?? Enumerable.Empty<Product>();
-
                 //another approach is like that: 
 
                 //var response = await _httpClient.GetAsync(_sourceUrl);
@@ -40,13 +39,16 @@ namespace TradeGrid.Services
                 //non-json response of request or adding custom handling.
                 //Otherwise, it's better to use GetFromJsonAsync for cleaner, simpler, and more efficient code. 
 
-                //todo use logging
-                Console.WriteLine("Received products:");
-                Console.WriteLine(products);
+                var productsJson = JsonConvert.SerializeObject(products);
+                _logger.LogInformation($"Received products: {productsJson}");
+                //possible to use System.Text.Json or Newtonsoft.Json to convert to json.
+                //note: in the task was "Appropriate logging including the full response".
+                //But it is not recommended to log entire data in logs, because the file can growth fast.
+                //So it's better to log count of items, or id's.
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"Request error: {ex.Message}");
+                _logger.LogError($"Request error: {ex.Message}");
             }
 
             return products;
@@ -54,7 +56,8 @@ namespace TradeGrid.Services
 
         public async Task<IEnumerable<Product>?> GetFilteredProductsAsync(FilterDto filter)
         {
-            var filteredProducts = (await GetAllProductsAsync())?.AsQueryable(); //better to use queryable, because it creates query and only then apply it into source
+            var filteredProducts = (await GetAllProductsAsync())?.AsQueryable(); 
+            //better to use queryable, because it creates query and only then apply it into source
 
             if (filter.MinPrice.HasValue)
             {
@@ -91,7 +94,7 @@ namespace TradeGrid.Services
                 }
             }
 
-            var count = filteredProducts?.Count();
+            _logger.LogInformation($"Filtered count of products: {filteredProducts?.Count()}");
 
             return filteredProducts;
         }
@@ -148,10 +151,15 @@ namespace TradeGrid.Services
 
             var ordered = wordCounts.OrderByDescending(x => x.Value);
 
-            return ordered
+            var commonWords = ordered
                 .Skip(skip)
                 .Take(take)
                 .Select(x => x.Key);
+
+            var commonWordsJson = JsonConvert.SerializeObject(commonWords);
+            _logger.LogInformation($"Common words, skip top {skip}, then take top {take}: {commonWordsJson}");
+
+            return commonWords;
         }
     }
 }
