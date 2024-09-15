@@ -15,8 +15,11 @@ namespace TradeGrid.Controllers
         {
             _productService = productService;
             _logger = logger;
+            //could be primary constructor, but I prefer old approach like this. 
         }
 
+        [ProducesResponseType(typeof(IEnumerable<ProductResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorDto), StatusCodes.Status400BadRequest)]
         [HttpGet("filter")]
         public async Task<IActionResult> GetProducts([FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice, [FromQuery] string? size, [FromQuery] string? highlight)
         {
@@ -44,7 +47,11 @@ namespace TradeGrid.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"{nameof(ProductController)}:{nameof(GetProducts)} throws an error: {ex.Message}");
-                return BadRequest(ex.Message);
+                return BadRequest(new ErrorDto()
+                {
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest
+                });
             }
         }
     }
