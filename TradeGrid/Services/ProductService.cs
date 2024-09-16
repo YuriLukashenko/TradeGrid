@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using TradeGrid.Core;
 using TradeGrid.Core.DTOs;
 using TradeGrid.Core.Interfaces;
 using TradeGrid.Core.Models;
@@ -88,7 +89,7 @@ namespace TradeGrid.Services
                     filteredProducts = filteredProducts?.Where(x 
                         => x.Description
                             .ToLower()
-                            .Split(new[] { ' ', '.', ',', '!', '?', ';', ':' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Split(Constants.Delimiters, StringSplitOptions.RemoveEmptyEntries)
                             .Intersect(filter.WordsFromHighlight)
                             .Any());
                 }
@@ -109,7 +110,7 @@ namespace TradeGrid.Services
             {
                 var words = mappedProduct.Description
                     .ToLower()
-                    .Split(new[] { ' ', '.', ',', '!', '?', ';', ':' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Split(Constants.Delimiters, StringSplitOptions.RemoveEmptyEntries)
                     .ToList();
 
                 foreach (var highlightWord in wordsFromHighlight)
@@ -134,7 +135,7 @@ namespace TradeGrid.Services
             {
                 var words = product.Description
                     .ToLower()
-                    .Split(new[] { ' ', '.', ',', '!', '?', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
+                    .Split(Constants.Delimiters, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (var word in words)
                 {
